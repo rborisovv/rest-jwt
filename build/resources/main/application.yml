@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/jwt-rest?useSSL=true&createDatabaseIfNotExist=true
+    username: root
+    password: radi12345
+
+
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+    hibernate:
+      ddl-auto: update
+
+
+  security:
+    user:
+      name: root
+      password: root
+
+server:
+  port: 8080

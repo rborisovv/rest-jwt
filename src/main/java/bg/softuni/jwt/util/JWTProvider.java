@@ -55,9 +55,7 @@ public class JWTProvider {
     }
 
     public Authentication getAuthentication(String username, Set<GrantedAuthority> grantedAuthorities, HttpServletRequest httpServletRequest) {
-        UsernamePasswordAuthenticationToken userPasswordToken = new UsernamePasswordAuthenticationToken(username, null,
-                grantedAuthorities);
-
+        UsernamePasswordAuthenticationToken userPasswordToken = new UsernamePasswordAuthenticationToken(username, null, grantedAuthorities);
         userPasswordToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
         return userPasswordToken;
     }

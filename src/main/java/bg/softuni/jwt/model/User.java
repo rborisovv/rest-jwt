@@ -4,9 +4,12 @@ import bg.softuni.jwt.enumeration.Authority;
 import bg.softuni.jwt.enumeration.Role;
 import lombok.*;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.io.Serializable;
-import java.time.LocalDate;
+import java.util.Date;
 import java.util.Set;
 
 @NoArgsConstructor
@@ -40,13 +43,13 @@ public class User extends BaseEntity implements Serializable {
     private String profileImgUrl;
 
     @Column(nullable = false)
-    private LocalDate lastLoginDate;
+    private Date lastLoginDate;
 
     @Column(nullable = false)
-    private LocalDate getLastLoginDateDisplay;
+    private Date getLastLoginDateDisplay;
 
     @Column(nullable = false)
-    private LocalDate joinDate;
+    private Date joinDate;
 
     @ElementCollection
     @Column(nullable = false)

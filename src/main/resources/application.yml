@@ -14,11 +14,13 @@ spring:
     hibernate:
       ddl-auto: update
 
-
   security:
     user:
       name: root
       password: root
+
+jwt:
+ secret: 'Y6S*n**={Ov(nWm7k[c^Qhw}c"-y(^^-!#<lXVRfD3^1QpI#^zzmkTfd-23Xfvu'
 
 server:
   port: 8080

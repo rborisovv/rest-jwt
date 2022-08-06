@@ -2,6 +2,7 @@ package bg.softuni.jwt.httpFilter;
 
 
 import bg.softuni.jwt.util.JWTProvider;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -25,7 +26,7 @@ import static bg.softuni.jwt.common.SecurityConstant.TOKEN_PREFIX;
 public class JWTAuthFilter extends OncePerRequestFilter {
     private final JWTProvider jwtProvider;
 
-    public JWTAuthFilter(JWTProvider jwtProvider) {
+    public JWTAuthFilter(@Lazy JWTProvider jwtProvider) {
         this.jwtProvider = jwtProvider;
     }
 

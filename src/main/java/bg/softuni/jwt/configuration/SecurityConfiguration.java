@@ -1,25 +1,42 @@
 package bg.softuni.jwt.configuration;
 
 import bg.softuni.jwt.dao.UserRepository;
+import bg.softuni.jwt.httpFilter.JWTAccessDeniedHandler;
+import bg.softuni.jwt.httpFilter.JWTAuthEntryPoint;
+import bg.softuni.jwt.httpFilter.JWTAuthFilter;
 import bg.softuni.jwt.service.AppUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import static org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.SPRING_SECURITY_FORM_PASSWORD_KEY;
-import static org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.SPRING_SECURITY_FORM_USERNAME_KEY;
+import static bg.softuni.jwt.common.SecurityConstant.PUBLIC_URLS;
 
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfiguration {
+    private final JWTAccessDeniedHandler accessDeniedHandler;
+    private final JWTAuthEntryPoint jwtAuthEntryPoint;
+    private final JWTAuthFilter jwtAuthFilter;
+    private final UserRepository userRepository;
+
+    public SecurityConfiguration(JWTAccessDeniedHandler accessDeniedHandler, JWTAuthEntryPoint jwtAuthEntryPoint, JWTAuthFilter jwtAuthFilter, UserRepository userRepository) {
+        this.accessDeniedHandler = accessDeniedHandler;
+        this.jwtAuthEntryPoint = jwtAuthEntryPoint;
+        this.jwtAuthFilter = jwtAuthFilter;
+        this.userRepository = userRepository;
+    }
 
     @Bean
-    public UserDetailsService userPrincipal(UserRepository userRepository) {
+    public UserDetailsService userPrincipal() {
         return new AppUserDetailsService(userRepository);
     }
 
@@ -31,19 +48,22 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
+                .csrf().disable()
+                .cors()
+                .and()
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
                 .authorizeRequests()
-                .antMatchers("/login", "/register")
+                .antMatchers(PUBLIC_URLS)
                 .permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .formLogin()
-                .loginPage("/login")
-                .usernameParameter(SPRING_SECURITY_FORM_USERNAME_KEY)
-                .passwordParameter(SPRING_SECURITY_FORM_PASSWORD_KEY)
-                .successForwardUrl("/")
+                .exceptionHandling()
+                .accessDeniedHandler(accessDeniedHandler)
+                .authenticationEntryPoint(jwtAuthEntryPoint)
                 .and()
-                .logout()
-                .clearAuthentication(true)
-                .and().build();
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .build();
     }
 }

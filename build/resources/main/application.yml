@@ -19,6 +19,12 @@ spring:
       name: root
       password: root
 
+  mvc:
+    throw-exception-if-no-handler-found: true
+  web:
+    resources:
+      add-mappings: false
+
 jwt:
   secret: 'Y6S*n**={Ov(nWm7k[c^Qhw}c"-y(^^-!#<lXVRfD3^1QpI#^zzmkTfd-23Xfvu'
 

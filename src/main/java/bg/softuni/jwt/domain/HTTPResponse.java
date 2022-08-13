@@ -26,5 +26,6 @@ public class HTTPResponse implements Serializable {
         this.httpStatus = httpStatus;
         this.reason = reason;
         this.message = message;
+
     }
 }

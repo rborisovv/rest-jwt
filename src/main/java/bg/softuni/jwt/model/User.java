@@ -1,7 +1,6 @@
 package bg.softuni.jwt.model;
 
-import bg.softuni.jwt.enumeration.Authority;
-import bg.softuni.jwt.enumeration.Role;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import javax.persistence.Column;
@@ -13,6 +12,7 @@ import java.util.Date;
 import java.util.Set;
 
 @NoArgsConstructor
+@RequiredArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
@@ -22,46 +22,58 @@ import java.util.Set;
 public class User extends BaseEntity implements Serializable {
 
     @Column
+    @NonNull
     private String userId;
 
+    @NonNull
     @Column(nullable = false)
     private String firstName;
 
+    @NonNull
     @Column(nullable = false)
     private String lastName;
 
     @Column(nullable = false, unique = true, updatable = false)
+    @NonNull
     private String username;
 
-    @Column(nullable = false)
+    @NonNull
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String password;
 
+    @NonNull
     @Column(nullable = false, unique = true, updatable = false)
     private String email;
 
+    @NonNull
     @Column(nullable = false)
     private String profileImgUrl;
 
-    @Column(nullable = false)
+    @Column
     private Date lastLoginDate;
 
-    @Column(nullable = false)
-    private Date getLastLoginDateDisplay;
+    @Column
+    private Date LastLoginDateDisplay;
 
+    @NonNull
     @Column(nullable = false)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM-dd-yyyy hh:mm:ss", timezone = "Europe/Sofia")
     private Date joinDate;
 
+    @NonNull
+    @Column(nullable = false)
+    private String role;
+
+    @NonNull
     @ElementCollection
     @Column(nullable = false)
-    private Set<Role> roles;
+    private Set<String> authorities;
 
-    @ElementCollection
-    @Column(nullable = false)
-    private Set<Authority> authorities;
-
+    @NonNull
     @Column(nullable = false)
     private Boolean isActive;
 
+    @NonNull
     @Column(nullable = false)
     private Boolean isNotLocked;
 }

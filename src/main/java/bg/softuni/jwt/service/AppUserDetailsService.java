@@ -1,7 +1,6 @@
 package bg.softuni.jwt.service;
 
 import bg.softuni.jwt.dao.UserRepository;
-import bg.softuni.jwt.enumeration.Authority;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -35,7 +34,7 @@ public class AppUserDetailsService implements UserDetailsService {
     }
 
     private bg.softuni.jwt.model.User mapUser(bg.softuni.jwt.model.User user) {
-        user.setGetLastLoginDateDisplay(user.getLastLoginDate());
+        user.setLastLoginDateDisplay(user.getLastLoginDate());
         user.setLastLoginDate(new Date());
         return user;
     }
@@ -44,6 +43,7 @@ public class AppUserDetailsService implements UserDetailsService {
         return User.builder()
                 .username(user.getUsername())
                 .password(user.getPassword())
+                .roles(user.getRole())
                 .authorities(this.map(user.getAuthorities()))
                 .accountExpired(false)
                 .accountLocked(false)
@@ -52,8 +52,8 @@ public class AppUserDetailsService implements UserDetailsService {
                 .build();
     }
 
-    private Collection<? extends GrantedAuthority> map(Set<Authority> userAuthorities) {
-        Function<Authority, GrantedAuthority> mapAuthority = authority -> new SimpleGrantedAuthority(authority.name().toUpperCase(Locale.ROOT));
+    private Collection<? extends GrantedAuthority> map(Set<String> userAuthorities) {
+        Function<String, GrantedAuthority> mapAuthority = authority -> new SimpleGrantedAuthority(authority.toUpperCase(Locale.ROOT));
         return userAuthorities.stream().map(mapAuthority).collect(Collectors.toSet());
     }
 }

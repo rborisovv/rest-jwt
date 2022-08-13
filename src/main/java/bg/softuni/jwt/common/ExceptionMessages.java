@@ -9,4 +9,5 @@ public class ExceptionMessages {
     public static final String ERROR_PROCESSING_FILE = "Error occurred while processing file";
     public static final String NOT_ENOUGH_PERMISSION = "You do not have enough permission";
     public static final String PAGE_NOT_FOUND = "This page was not found!";
+    public static final String USERNAME_EXISTS = "User with that username or email already exists";
 }

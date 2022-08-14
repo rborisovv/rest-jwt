@@ -6,6 +6,7 @@ import bg.softuni.jwt.exception.UsernameExistsException;
 import bg.softuni.jwt.model.User;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -16,12 +17,12 @@ import java.util.Optional;
 
 import static bg.softuni.jwt.enumeration.Role.ROLE_USER;
 
-@Service
 @Slf4j
+@Service
+@Qualifier("UserService")
 public class UserService {
     private static final String USER_LOGGER_REGISTER_INFO = "User with %s username successfully registered!";
     private final UserRepository userRepository;
-
     private final PasswordEncoder passwordEncoder;
 
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
@@ -30,7 +31,7 @@ public class UserService {
     }
 
     public User register(String firstName, String lastName, String username, String password, String email) throws UsernameExistsException {
-        validateNewCredentials(firstName, lastName);
+        validateRegisterCredentials(firstName, lastName);
         User user = UserBuilder.build(firstName, lastName, username, passwordEncoder, password, email);
         User savedUser = userRepository.save(user);
         log.info(String.format(USER_LOGGER_REGISTER_INFO, username));
@@ -38,10 +39,10 @@ public class UserService {
     }
 
     public List<User> getUsers() {
-        return null;
+        return userRepository.findAll();
     }
 
-    private void validateNewCredentials(String username, String email) throws UsernameExistsException {
+    private void validateRegisterCredentials(String username, String email) throws UsernameExistsException {
         Optional<User> optionalUser = this.userRepository.findByUsernameOrEmail(username, email);
         if (optionalUser.isPresent()) {
             throw new UsernameExistsException(ExceptionMessages.USERNAME_EXISTS);
@@ -49,8 +50,9 @@ public class UserService {
     }
 
     private static class UserBuilder {
+        public static final String DEFAULT_USER_IMAGE_PATH = "/user/image/profile/temp";
         private static User build(String firstName, String lastName, String username, PasswordEncoder passwordEncoder, String password, String email) {
-            String imagePath = ServletUriComponentsBuilder.fromCurrentContextPath().path("/user/image/profile/temp").toUriString();
+            String imagePath = ServletUriComponentsBuilder.fromCurrentContextPath().path(DEFAULT_USER_IMAGE_PATH).toUriString();
             return new User(
                     RandomStringUtils.randomAscii(10).replaceAll("\s", ""),
                     firstName, lastName, username, passwordEncoder.encode(password),

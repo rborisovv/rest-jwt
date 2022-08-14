@@ -19,11 +19,9 @@ public class UserResource extends ExceptionHandler {
 
     @PostMapping("/register")
     public ResponseEntity<User> register(@RequestBody User user) throws UsernameExistsException {
-        User registeredUser = userService.register(user.getFirstName(),
-                user.getLastName(),
-                user.getUsername(),
-                user.getPassword(),
-                user.getEmail());
+        User registeredUser =
+                userService.register(user.getFirstName(), user.getLastName(), user.getUsername(),
+                        user.getPassword(), user.getEmail());
 
         return new ResponseEntity<>(registeredUser, HttpStatus.OK);
     }

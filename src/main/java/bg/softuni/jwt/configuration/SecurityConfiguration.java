@@ -5,6 +5,7 @@ import bg.softuni.jwt.httpFilter.JWTAccessDeniedHandler;
 import bg.softuni.jwt.httpFilter.JWTAuthEntryPoint;
 import bg.softuni.jwt.httpFilter.JWTAuthFilter;
 import bg.softuni.jwt.service.AppUserDetailsService;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -54,7 +55,9 @@ public class SecurityConfiguration {
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                .authorizeRequests()
+                .authorizeHttpRequests()
+                .requestMatchers(PathRequest.toStaticResources().atCommonLocations())
+                .permitAll()
                 .antMatchers(PUBLIC_URLS)
                 .permitAll()
                 .anyRequest().authenticated()

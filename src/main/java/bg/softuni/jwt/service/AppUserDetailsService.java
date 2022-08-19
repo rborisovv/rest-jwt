@@ -31,6 +31,7 @@ public class AppUserDetailsService implements UserDetailsService {
         bg.softuni.jwt.model.User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException(USER_NOT_FOUND));
         validateLoginAttempt(user);
+        userRepository.save(user);
         return Optional.of(user).map(this::userDetails).get();
     }
 

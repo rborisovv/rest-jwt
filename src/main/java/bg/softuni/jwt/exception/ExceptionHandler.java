@@ -11,6 +11,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
@@ -102,6 +103,12 @@ public class ExceptionHandler {
     public ResponseEntity<HTTPResponse> ioException(IOException exception) {
         log.error(exception.getMessage());
         return createHttpResponse(INTERNAL_SERVER_ERROR, ERROR_PROCESSING_FILE);
+    }
+
+    @org.springframework.web.bind.annotation.ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<HTTPResponse> validationException(MethodArgumentNotValidException exception) {
+        log.error(exception.getMessage());
+        return createHttpResponse(BAD_REQUEST, BAD_CREDENTIALS);
     }
 
     private ResponseEntity<HTTPResponse> createHttpResponse(HttpStatus httpStatus, String message) {

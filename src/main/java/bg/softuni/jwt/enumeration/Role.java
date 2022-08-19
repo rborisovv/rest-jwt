@@ -5,11 +5,11 @@ import java.util.Set;
 import static bg.softuni.jwt.common.Authority.*;
 
 public enum Role {
-    ROLE_USER(USER_AUTHORITIES),
-    ROLE_HR(HR_AUTHORITIES),
-    ROLE_MANAGER(MANAGER_AUTHORITIES),
-    ROLE_ADMIN(ADMIN_AUTHORITIES),
-    ROLE_MODERATOR(MODERATOR_AUTHORITIES);
+    USER(USER_AUTHORITIES),
+    HR(HR_AUTHORITIES),
+    MANAGER(MANAGER_AUTHORITIES),
+    ADMIN(ADMIN_AUTHORITIES),
+    MODERATOR(MODERATOR_AUTHORITIES);
 
 
     private final Set<String> authorities;

@@ -27,24 +27,23 @@ import static java.util.Arrays.stream;
 
 @Component
 public class JWTProvider {
-    private final UserDetailsService userPrincipal;
+    private final UserDetailsService userDetailsService;
 
     @Value("${jwt.secret}")
     private String secret;
 
-    public JWTProvider(UserDetailsService userPrincipal) {
-        this.userPrincipal = userPrincipal;
+    public JWTProvider(UserDetailsService userDetailsService) {
+        this.userDetailsService = userDetailsService;
     }
 
     public String generateJwt() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String principalName = authentication.getName();
-        String[] claims = getClaimsFromUser(principalName);
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        String[] claims = getClaimsFromUser(username);
         return JWT.create()
                 .withIssuer(TOKEN_ISSUER)
                 .withAudience(ISSUER_ADMINISTRATION)
                 .withIssuedAt(new Date())
-                .withSubject(principalName)
+                .withSubject(username)
                 .withArrayClaim(AUTHORITIES, claims)
                 .withExpiresAt(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .sign(Algorithm.HMAC512(secret.getBytes(StandardCharsets.UTF_8)));
@@ -95,7 +94,7 @@ public class JWTProvider {
     }
 
     private String[] getClaimsFromUser(String username) {
-        UserDetails userDetails = userPrincipal.loadUserByUsername(username);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
         return userDetails.getAuthorities()
                 .stream().map(GrantedAuthority::getAuthority).toArray(String[]::new);
     }

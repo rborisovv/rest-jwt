@@ -9,7 +9,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.Locale;
 import java.util.Set;
 import java.util.function.Function;
@@ -28,15 +27,8 @@ public class AppUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return userRepository.findByUsername(username)
-                .map(this::mapUser)
                 .map(this::userDetails)
                 .orElseThrow(() -> new UsernameNotFoundException(String.format(userNotFoundMessage, username)));
-    }
-
-    private bg.softuni.jwt.model.User mapUser(bg.softuni.jwt.model.User user) {
-        user.setLastLoginDateDisplay(user.getLastLoginDate());
-        user.setLastLoginDate(new Date());
-        return user;
     }
 
     private UserDetails userDetails(bg.softuni.jwt.model.User user) {

@@ -5,7 +5,6 @@ import bg.softuni.jwt.dto.UserRegisterDto;
 import bg.softuni.jwt.exception.ExceptionHandler;
 import bg.softuni.jwt.exception.UsernameExistsException;
 import bg.softuni.jwt.service.UserService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,8 +24,7 @@ public class UserResource extends ExceptionHandler {
 
     @PostMapping("/register")
     public ResponseEntity<UserRegisterDto> register(@RequestBody @Valid UserRegisterDto userRegisterDto) throws UsernameExistsException {
-        UserRegisterDto registeredUser = userService.register(userRegisterDto);
-        return new ResponseEntity<>(registeredUser, HttpStatus.OK);
+        return userService.register(userRegisterDto);
     }
 
     @PostMapping("/login")

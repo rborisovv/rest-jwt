@@ -47,7 +47,7 @@ public class UserService {
         this.jwtProvider = jwtProvider;
     }
 
-    public UserRegisterDto register(UserRegisterDto userRegisterDto) throws UsernameExistsException {
+    public ResponseEntity<UserRegisterDto> register(UserRegisterDto userRegisterDto) throws UsernameExistsException {
         String firstName = userRegisterDto.getFirstName();
         String lastName = userRegisterDto.getLastName();
         String username = userRegisterDto.getUsername();
@@ -58,7 +58,7 @@ public class UserService {
         User user = UserBuilder.build(firstName, lastName, username, passwordEncoder, password, email);
         userRepository.save(user);
         log.info(String.format(USER_LOGGER_REGISTER_INFO, username));
-        return userRegisterDto;
+        return new ResponseEntity<>(userRegisterDto, OK);
     }
 
     public ResponseEntity<UserLoginDto> login(UserLoginDto userLoginDto) {

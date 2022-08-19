@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
 
 import static bg.softuni.jwt.common.SecurityConstant.JWT_TOKEN_HEADER;
@@ -80,10 +79,6 @@ public class UserService {
         HttpHeaders httpHeader = new HttpHeaders();
         httpHeader.add(JWT_TOKEN_HEADER, jwtProvider.generateJwt());
         return httpHeader;
-    }
-
-    public List<User> getUsers() {
-        return userRepository.findAll();
     }
 
     private void validateRegisterCredentials(String username, String email) throws UsernameExistsException {

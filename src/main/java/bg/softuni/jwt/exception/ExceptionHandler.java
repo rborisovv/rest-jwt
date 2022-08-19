@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -49,6 +50,12 @@ public class ExceptionHandler {
     public ResponseEntity<HTTPResponse> accountLockedException() {
         return createHttpResponse(UNAUTHORIZED, ACCOUNT_LOCKED);
     }
+
+    @org.springframework.web.bind.annotation.ExceptionHandler(LockedException.class)
+    public ResponseEntity<HTTPResponse> accountLockedDuringAuthentication() {
+        return createHttpResponse(UNAUTHORIZED, ACCOUNT_LOCKED);
+    }
+
 
     @org.springframework.web.bind.annotation.ExceptionHandler(TokenExpiredException.class)
     public ResponseEntity<HTTPResponse> tokenExpiredException(TokenExpiredException exception) {

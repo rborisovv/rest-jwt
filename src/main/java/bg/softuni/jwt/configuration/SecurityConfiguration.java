@@ -5,6 +5,7 @@ import bg.softuni.jwt.httpFilter.JWTAccessDeniedHandler;
 import bg.softuni.jwt.httpFilter.JWTAuthEntryPoint;
 import bg.softuni.jwt.httpFilter.JWTAuthFilter;
 import bg.softuni.jwt.service.AppUserDetailsService;
+import bg.softuni.jwt.service.LoginAttemptService;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,17 +31,19 @@ public class SecurityConfiguration {
     private final JWTAuthEntryPoint jwtAuthEntryPoint;
     private final JWTAuthFilter jwtAuthFilter;
     private final UserRepository userRepository;
+    private final LoginAttemptService loginAttemptService;
 
-    public SecurityConfiguration(JWTAccessDeniedHandler accessDeniedHandler, JWTAuthEntryPoint jwtAuthEntryPoint, JWTAuthFilter jwtAuthFilter, UserRepository userRepository) {
+    public SecurityConfiguration(JWTAccessDeniedHandler accessDeniedHandler, JWTAuthEntryPoint jwtAuthEntryPoint, JWTAuthFilter jwtAuthFilter, UserRepository userRepository, LoginAttemptService loginAttemptService) {
         this.accessDeniedHandler = accessDeniedHandler;
         this.jwtAuthEntryPoint = jwtAuthEntryPoint;
         this.jwtAuthFilter = jwtAuthFilter;
         this.userRepository = userRepository;
+        this.loginAttemptService = loginAttemptService;
     }
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return new AppUserDetailsService(userRepository);
+        return new AppUserDetailsService(userRepository, loginAttemptService);
     }
 
     @Bean

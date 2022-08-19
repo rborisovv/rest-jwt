@@ -14,6 +14,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -69,7 +70,10 @@ public class UserService {
         UsernamePasswordAuthenticationToken authToken =
                 new UsernamePasswordAuthenticationToken(userDetails, password, userDetails.getAuthorities());
         authenticationManager.authenticate(authToken);
-        SecurityContextHolder.getContext().setAuthentication(authToken);
+
+        SecurityContext newContext = SecurityContextHolder.createEmptyContext();
+        newContext.setAuthentication(authToken);
+        SecurityContextHolder.setContext(newContext);
 
         HttpHeaders jwtHeader = getJwtHeader();
         return new ResponseEntity<>(userLoginDto, jwtHeader, OK);

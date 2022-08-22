@@ -23,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.transaction.Transactional;
 import java.util.Date;
 import java.util.Optional;
 
@@ -32,6 +33,7 @@ import static org.springframework.http.HttpStatus.OK;
 
 @Slf4j
 @Service
+@Transactional
 @Qualifier("UserService")
 public class UserService {
     private static final String USER_LOGGER_REGISTER_INFO = "User with %s username successfully registered!";

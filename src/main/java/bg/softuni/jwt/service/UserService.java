@@ -70,10 +70,10 @@ public class UserService {
 
         UsernamePasswordAuthenticationToken authToken =
                 new UsernamePasswordAuthenticationToken(userDetails, password, userDetails.getAuthorities());
-        Authentication authenticate = authenticationManager.authenticate(authToken);
+        Authentication authentication = authenticationManager.authenticate(authToken);
 
         SecurityContext newContext = SecurityContextHolder.createEmptyContext();
-        newContext.setAuthentication(authenticate);
+        newContext.setAuthentication(authentication);
         SecurityContextHolder.setContext(newContext);
 
         HttpHeaders jwtHeader = getJwtHeader();

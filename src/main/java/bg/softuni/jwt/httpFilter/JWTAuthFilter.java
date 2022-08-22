@@ -2,6 +2,7 @@ package bg.softuni.jwt.httpFilter;
 
 
 import bg.softuni.jwt.util.JWTProvider;
+import lombok.NonNull;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -31,7 +32,7 @@ public class JWTAuthFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         if (request.getMethod().equalsIgnoreCase(HTTP_OPTIONS_METHOD)) {
             response.setStatus(HttpStatus.OK.value());
         } else {

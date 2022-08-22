@@ -14,6 +14,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -69,10 +70,10 @@ public class UserService {
 
         UsernamePasswordAuthenticationToken authToken =
                 new UsernamePasswordAuthenticationToken(userDetails, password, userDetails.getAuthorities());
-        authenticationManager.authenticate(authToken);
+        Authentication authenticate = authenticationManager.authenticate(authToken);
 
         SecurityContext newContext = SecurityContextHolder.createEmptyContext();
-        newContext.setAuthentication(authToken);
+        newContext.setAuthentication(authenticate);
         SecurityContextHolder.setContext(newContext);
 
         HttpHeaders jwtHeader = getJwtHeader();
@@ -94,9 +95,11 @@ public class UserService {
 
     private static class UserBuilder {
         private static final String DEFAULT_USER_IMAGE_PATH = "/user/image/profile/temp";
-        private static final String IMAGE_PATH = ServletUriComponentsBuilder.fromCurrentContextPath().path(DEFAULT_USER_IMAGE_PATH).toUriString();
+        private static final String IMAGE_PATH = ServletUriComponentsBuilder
+                .fromCurrentContextPath().path(DEFAULT_USER_IMAGE_PATH).toUriString();
 
-        private static User build(String firstName, String lastName, String username, PasswordEncoder passwordEncoder, String password, String email) {
+        private static User build(String firstName, String lastName, String username,
+                                  PasswordEncoder passwordEncoder, String password, String email) {
             return new User(RandomStringUtils.randomAscii(10).replaceAll("\s", ""),
                     firstName, lastName, username, passwordEncoder.encode(password),
                     email, IMAGE_PATH, new Date(), USER.name(), USER.getAuthorities(),

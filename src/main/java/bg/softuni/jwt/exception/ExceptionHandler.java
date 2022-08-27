@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -24,8 +23,8 @@ import java.util.Locale;
 import java.util.Objects;
 
 import static bg.softuni.jwt.common.ExceptionMessages.*;
-import static org.springframework.http.HttpStatus.*;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.*;
 
 @Slf4j
 @RestControllerAdvice
@@ -72,8 +71,8 @@ public class ExceptionHandler {
         return createHttpResponse(BAD_REQUEST, exception.getMessage());
     }
 
-    @org.springframework.web.bind.annotation.ExceptionHandler(UsernameExistsException.class)
-    public ResponseEntity<HTTPResponse> usernameExistsException(UsernameNotFoundException exception) {
+    @org.springframework.web.bind.annotation.ExceptionHandler(UserExistsException.class)
+    public ResponseEntity<HTTPResponse> usernameExistsException(UserExistsException exception) {
         return createHttpResponse(BAD_REQUEST, exception.getMessage());
     }
 

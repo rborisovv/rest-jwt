@@ -1,5 +1,5 @@
 package bg.softuni.jwt.common;
 
 public class Messages {
-    public static final String userNotFoundMessage = "User with username %s not found!";
+    public static final String USER_DELETED_SUCCESSFULLY = "User successfully deleted";
 }

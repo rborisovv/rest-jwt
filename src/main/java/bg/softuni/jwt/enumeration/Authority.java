@@ -4,6 +4,7 @@ public enum Authority {
     CREATE,
     UPDATE,
     DELETE,
+
     EDIT,
     READ
 }

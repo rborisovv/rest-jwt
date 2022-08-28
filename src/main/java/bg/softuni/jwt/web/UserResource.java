@@ -13,13 +13,20 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Locale;
 
+import static bg.softuni.jwt.common.FileConstant.*;
 import static bg.softuni.jwt.common.Messages.USER_DELETED_SUCCESSFULLY;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.MediaType.IMAGE_JPEG_VALUE;
 
 @RestController
 @RequestMapping("/user")
@@ -59,7 +66,7 @@ public class UserResource {
 
     @PostMapping("/updateProfileImage")
     public ResponseEntity<User> updateProfileImage(@RequestParam("username") String username,
-                                                            @RequestParam("profileImage") MultipartFile profileImage) throws UserExistsException, IOException, UserNotFoundException {
+                                                   @RequestParam("profileImage") MultipartFile profileImage) throws UserExistsException, IOException, UserNotFoundException {
 
         User user = userService.updateProfileImage(username, profileImage);
         return new ResponseEntity<>(user, OK);
@@ -85,5 +92,25 @@ public class UserResource {
     private ResponseEntity<HTTPResponse> response(HttpStatus httpStatus, String message) {
         return new ResponseEntity<>(new HTTPResponse(httpStatus.value(), httpStatus,
                 httpStatus.getReasonPhrase().toUpperCase(Locale.ROOT), message), httpStatus);
+    }
+
+    @GetMapping(path = "/image/{username}/{fileName}", produces = IMAGE_JPEG_VALUE)
+    public byte[] getProfileImage(@PathVariable String username, @PathVariable String fileName) throws IOException {
+        return Files.readAllBytes(Paths.get(USER_FOLDER + username + FORWARD_SLASH + fileName));
+    }
+
+    @GetMapping(path = "/image/profile/{username}", produces = IMAGE_JPEG_VALUE)
+    public byte[] getTempProfileImage(@PathVariable String username) throws IOException {
+        URL url = new URL(TEMP_PROFILE_IMAGE_BASE_URL + username);
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        try (InputStream inputStream = url.openStream()) {
+            int bytesRead;
+            byte[] chunk = new byte[1024];
+
+            while ((bytesRead = inputStream.read(chunk)) > 0) {
+                byteArrayOutputStream.write(chunk, 0, bytesRead);
+            }
+        }
+        return byteArrayOutputStream.toByteArray();
     }
 }

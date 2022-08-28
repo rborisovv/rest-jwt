@@ -24,8 +24,8 @@ public class NewUserDto {
     @NotBlank
     private String username;
 
-    @NotBlank
     @Email
+    @NotBlank
     private String email;
 
     @NotBlank

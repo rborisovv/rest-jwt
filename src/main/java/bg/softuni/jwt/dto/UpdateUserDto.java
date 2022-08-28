@@ -1,5 +1,6 @@
 package bg.softuni.jwt.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,10 +16,6 @@ import javax.validation.constraints.NotBlank;
 @ToString
 public class UpdateUserDto {
 
-    //String currentUsername, String newFirstName, String newLastName,
-    //                           String newEmail, String role, boolean isNonLocked, boolean isActive,
-    //                           MultipartFile profileImage
-
     @NotBlank
     private String currentUsername;
 
@@ -28,7 +25,6 @@ public class UpdateUserDto {
     @NotBlank
     private String lastName;
 
-    @NotBlank
     @Email
     private String email;
 
@@ -39,5 +35,6 @@ public class UpdateUserDto {
 
     private Boolean isActive;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private MultipartFile multipartFile;
 }

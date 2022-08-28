@@ -39,18 +39,18 @@ public class AppUserDetailsService implements UserDetailsService {
         return User.builder()
                 .username(user.getUsername())
                 .password(user.getPassword())
-                .roles(user.getRole())
-                .authorities(this.map(user.getAuthorities()))
+                .roles(user.getRole().getName())
+                .authorities(this.map(user.getRole().getAuthorities()))
                 .accountExpired(false)
-                .accountLocked(!user.getIsNotLocked())
+                .accountLocked(!user.getIsNonLocked())
                 .credentialsExpired(false)
                 .disabled(false)
                 .build();
     }
 
     private void validateLoginAttempt(bg.softuni.jwt.model.User user) {
-        if (user.getIsNotLocked()) {
-            user.setIsNotLocked(!loginAttemptService.hasExceededMaxAttempts(user.getUsername()));
+        if (user.getIsNonLocked()) {
+            user.setIsNonLocked(!loginAttemptService.hasExceededMaxAttempts(user.getUsername()));
         } else {
             loginAttemptService.evictUserFromLoginAttemptCache(user.getUsername());
         }
@@ -60,5 +60,6 @@ public class AppUserDetailsService implements UserDetailsService {
         Function<String, GrantedAuthority> mapAuthority =
                 authority -> new SimpleGrantedAuthority(authority.toUpperCase(Locale.ROOT));
         return userAuthorities.stream().map(mapAuthority).collect(Collectors.toSet());
+
     }
 }

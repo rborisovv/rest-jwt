@@ -53,7 +53,7 @@ public class UserResource {
     public ResponseEntity<UpdateUserDto> updateUser(@RequestParam("currentUsername") String currentUsername,
                                                     @RequestParam("firstName") String firstName,
                                                     @RequestParam("lastName") String lastName,
-                                                    @RequestParam("email") String email,
+                                                    @RequestParam(value = "email", required = false) String email,
                                                     @RequestParam("role") String role,
                                                     @RequestParam("isNonLocked") String isNonLocked,
                                                     @RequestParam("isActive") String isActive,

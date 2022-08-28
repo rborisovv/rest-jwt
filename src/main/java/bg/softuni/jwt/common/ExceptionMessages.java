@@ -10,6 +10,8 @@ public class ExceptionMessages {
     public static final String NOT_ENOUGH_PERMISSION = "You do not have enough permission!";
     public static final String PAGE_NOT_FOUND = "This page was not found!";
     public static final String USERNAME_EXISTS = "User with that username or email already exists!";
+
+    public static final String EMAIL_EXISTS = "User with that email already exists!";
     public static final String BAD_CREDENTIALS = "Bad Credentials!";
     public static final String USER_NOT_FOUND = "User with provided username or password does not exist!";
     public static final String USER_BY_USERNAME_NOT_FOUND = "User with provided credentials not found!";

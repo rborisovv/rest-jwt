@@ -1,6 +1,7 @@
 package bg.softuni.jwt.service;
 
 import bg.softuni.jwt.common.ExceptionMessages;
+import bg.softuni.jwt.dao.RoleRepository;
 import bg.softuni.jwt.dao.UserRepository;
 import bg.softuni.jwt.dto.NewUserDto;
 import bg.softuni.jwt.dto.UpdateUserDto;
@@ -13,6 +14,7 @@ import bg.softuni.jwt.model.User;
 import bg.softuni.jwt.util.JWTProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -55,13 +57,16 @@ public class UserService {
     @Value("${user.default.password}")
     private String defaultPassword;
     private final UserRepository userRepository;
+
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserDetailsService userDetailsService;
     private final AuthenticationManager authenticationManager;
     private final JWTProvider jwtProvider;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, UserDetailsService userDetailsService, AuthenticationManager authenticationManager, JWTProvider jwtProvider) {
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder, UserDetailsService userDetailsService, AuthenticationManager authenticationManager, JWTProvider jwtProvider) {
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.userDetailsService = userDetailsService;
         this.authenticationManager = authenticationManager;
@@ -77,24 +82,24 @@ public class UserService {
         String lastName = newUserDto.getLastName();
         String role = newUserDto.getRole();
         MultipartFile multipartFile = newUserDto.getMultipartFile();
+        var userRole = roleRepository.findRoleByName(role);
 
-        User user = UserBuilder.build(firstName, lastName, username, passwordEncoder, defaultPassword, email, role);
-        userRepository.save(user);
+        User user = UserBuilder.build(firstName, lastName, username, passwordEncoder, defaultPassword, email, userRole);
         saveProfileImage(user, multipartFile);
+        userRepository.save(user);
         return new ResponseEntity<>(newUserDto, OK);
     }
 
     private void saveProfileImage(User user, MultipartFile profileImage) throws IOException {
-        if (!profileImage.isEmpty()) {
+        if (profileImage != null) {
             Path userFolder = Paths.get(USER_FOLDER + user.getUsername()).toAbsolutePath().normalize();
             if (!Files.exists(userFolder)) {
                 Files.createDirectories(userFolder);
-                log.info(DIRECTORY_CREATED);
+                log.info(DIRECTORY_CREATED + user.getUsername());
             }
             Files.deleteIfExists(Paths.get(USER_FOLDER + user.getUsername() + DOT + JPG_EXTENSION));
             Files.copy(profileImage.getInputStream(), userFolder.resolve(user.getUsername() + DOT + JPG_EXTENSION), REPLACE_EXISTING);
             user.setProfileImgUrl(setProfileImageUrl(user.getUsername()));
-            userRepository.save(user);
             log.info(FILE_SAVED_IN_THE_FILE_SYSTEM + profileImage.getOriginalFilename());
         }
     }
@@ -107,7 +112,9 @@ public class UserService {
     public ResponseEntity<UpdateUserDto> updateUser(UpdateUserDto updateUserDto) throws UserExistsException, IOException {
         String newEmail = updateUserDto.getEmail();
         String currentUsername = updateUserDto.getCurrentUsername();
-        validateEmailCredentials(newEmail);
+        if (StringUtils.isNotBlank(newEmail)) {
+            validateEmailCredentials(newEmail);
+        }
 
         User user = userRepository.findByUsername(currentUsername).orElseThrow(() -> new UsernameNotFoundException(USER_NOT_FOUND));
 
@@ -120,13 +127,15 @@ public class UserService {
 
         user.setFirstName(newFirstName);
         user.setLastName(newLastName);
-        user.setEmail(newEmail);
-        user.setRole(role);
-        user.setAuthorities(getRole(role).getAuthorities());
-        user.setIsNotLocked(isNonLocked);
+        if (StringUtils.isNotBlank(newEmail)) {
+            user.setEmail(newEmail);
+        }
+        var userRole = this.roleRepository.findRoleByName(getRole(role).name());
+        user.setRole(userRole);
+        user.setIsNonLocked(isNonLocked);
         user.setIsActive(isActive);
-        userRepository.save(user);
         saveProfileImage(user, multipartFile);
+        userRepository.save(user);
 
         return new ResponseEntity<>(updateUserDto, OK);
     }
@@ -154,7 +163,11 @@ public class UserService {
         String email = userRegisterDto.getEmail();
 
         validateRegisterCredentials(username, email);
-        User user = UserBuilder.build(firstName, lastName, username, passwordEncoder, password, email, USER.name());
+
+        var userRole = this.roleRepository.findRoleByName(USER.name());
+        User user = UserBuilder.build(firstName, lastName, username, passwordEncoder, password, email, userRole);
+
+
         userRepository.save(user);
         log.info(String.format(USER_LOGGER_REGISTER_INFO, username));
         return new ResponseEntity<>(userRegisterDto, OK);
@@ -170,7 +183,6 @@ public class UserService {
 
         Authentication authentication = authenticationManager.authenticate(authToken);
         SecurityContext newContext = SecurityContextHolder.createEmptyContext();
-        SecurityContextHolder.getContext();
         newContext.setAuthentication(authentication);
         SecurityContextHolder.setContext(newContext);
 
@@ -201,7 +213,7 @@ public class UserService {
     private void validateEmailCredentials(String email) throws UserExistsException {
         Optional<User> optionalUser = this.userRepository.findByEmail(email);
         if (optionalUser.isPresent()) {
-            throw new UserExistsException(ExceptionMessages.USERNAME_EXISTS);
+            throw new UserExistsException(ExceptionMessages.EMAIL_EXISTS);
         }
     }
 
@@ -221,14 +233,24 @@ public class UserService {
 
     private static class UserBuilder {
         private static User build(String firstName, String lastName, String username, PasswordEncoder passwordEncoder,
-                                  String password, String email, String role) {
+                                  String password, String email, bg.softuni.jwt.model.Role userRole) {
 
-            return new User(RandomStringUtils.randomAscii(10).replaceAll("\s", ""),
-                    firstName, lastName, username, passwordEncoder.encode(password),
-                    email, constructProfileImageUrl(username), new Date(), role, USER.getAuthorities(),
-                    true, true
-            );
+            return User.builder()
+                    .userId(generateUserId())
+                    .firstName(firstName)
+                    .lastName(lastName)
+                    .username(username)
+                    .password(passwordEncoder.encode(password))
+                    .email(email)
+                    .joinDate(new Date())
+                    .profileImgUrl(constructProfileImageUrl(username))
+                    .role(userRole)
+                    .isNonLocked(true).isActive(true).build();
         }
+    }
+
+    private static String generateUserId() {
+        return RandomStringUtils.randomAscii(10).replaceAll("\s", "");
     }
 
     private static String constructProfileImageUrl(String username) {

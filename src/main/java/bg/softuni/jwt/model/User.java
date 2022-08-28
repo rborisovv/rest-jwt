@@ -24,6 +24,7 @@ public class User extends BaseEntity implements Serializable {
 
     @Column
     @NonNull
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String userId;
 
     @NonNull

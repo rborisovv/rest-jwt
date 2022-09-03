@@ -30,6 +30,7 @@ import static org.springframework.http.MediaType.IMAGE_JPEG_VALUE;
 
 @RestController
 @RequestMapping("/user")
+@CrossOrigin("http://localhost:4200")
 public class UserResource {
     private final UserService userService;
 

@@ -32,12 +32,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import javax.transaction.Transactional;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 
 import static bg.softuni.jwt.common.ExceptionMessages.USER_BY_USERNAME_NOT_FOUND;
 import static bg.softuni.jwt.common.ExceptionMessages.USER_NOT_FOUND;
@@ -49,7 +51,6 @@ import static org.springframework.http.HttpStatus.OK;
 
 @Slf4j
 @Service
-@Transactional
 @Qualifier("UserService")
 public class UserService {
     private static final String USER_LOGGER_REGISTER_INFO = "User with %s username successfully registered!";

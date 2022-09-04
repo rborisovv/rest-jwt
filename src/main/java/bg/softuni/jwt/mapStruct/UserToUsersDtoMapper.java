@@ -13,5 +13,6 @@ public interface UserToUsersDtoMapper {
 
     @Mapping(source = "role.name", target = "role")
     @Mapping(source = "profileImgUrl", target = "profileImageUrl")
+    @Mapping(source = "role.authorities", target = "authorities")
     UsersDto usersDto(User user);
 }

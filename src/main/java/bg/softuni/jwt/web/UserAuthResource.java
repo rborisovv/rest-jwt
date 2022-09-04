@@ -3,6 +3,7 @@ package bg.softuni.jwt.web;
 import bg.softuni.jwt.dto.UserLoginDto;
 import bg.softuni.jwt.dto.UserRegisterDto;
 import bg.softuni.jwt.exception.UserExistsException;
+import bg.softuni.jwt.exception.UserNotFoundException;
 import bg.softuni.jwt.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +26,7 @@ public class UserAuthResource {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserLoginDto> login(@RequestBody @Valid UserLoginDto userLoginDto) {
+    public ResponseEntity<UserLoginDto> login(@RequestBody @Valid UserLoginDto userLoginDto) throws UserNotFoundException {
         return userService.login(userLoginDto);
     }
 }

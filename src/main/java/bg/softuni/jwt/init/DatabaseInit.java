@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Set;
 
-import static bg.softuni.jwt.enumeration.Role.MODERATOR;
+import static bg.softuni.jwt.enumeration.Role.OWNER;
 
 @Component
 public class DatabaseInit implements CommandLineRunner {
@@ -44,7 +44,7 @@ public class DatabaseInit implements CommandLineRunner {
                     .build();
 
             Role moderatorRole = Role.builder()
-                    .name(MODERATOR.name())
+                    .name(OWNER.name())
                     .authorities(Authority.MODERATOR_AUTHORITIES)
                     .build();
 

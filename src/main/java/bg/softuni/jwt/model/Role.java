@@ -3,6 +3,7 @@ package bg.softuni.jwt.model;
 import lombok.*;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Set;
 
 @NoArgsConstructor
@@ -13,7 +14,7 @@ import java.util.Set;
 @ToString
 @Entity
 @Table
-public class Role extends BaseEntity {
+public class Role extends BaseEntity implements Serializable {
 
     @Column(nullable = false)
     private String name;

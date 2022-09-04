@@ -53,9 +53,11 @@ public class User extends BaseEntity implements Serializable {
     private String profileImgUrl;
 
     @Column
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM-dd-yyyy hh:mm:ss", timezone = "Europe/Sofia")
     private Date lastLoginDate;
 
     @Column
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM-dd-yyyy hh:mm:ss", timezone = "Europe/Sofia")
     private Date LastLoginDateDisplay;
 
     @NonNull

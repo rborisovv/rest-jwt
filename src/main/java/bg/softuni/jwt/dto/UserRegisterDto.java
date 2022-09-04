@@ -1,10 +1,12 @@
 package bg.softuni.jwt.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
 
 @AllArgsConstructor
 @Getter
@@ -21,8 +23,6 @@ public class UserRegisterDto {
     @NotBlank
     private String username;
 
-    @NotBlank
-    @Size(min = 6)
     private String password;
 
     @Email

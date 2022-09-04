@@ -3,6 +3,7 @@ package bg.softuni.jwt.web;
 import bg.softuni.jwt.domain.HTTPResponse;
 import bg.softuni.jwt.dto.NewUserDto;
 import bg.softuni.jwt.dto.UpdateUserDto;
+import bg.softuni.jwt.dto.UsersDto;
 import bg.softuni.jwt.exception.UserExistsException;
 import bg.softuni.jwt.exception.UserNotFoundException;
 import bg.softuni.jwt.model.User;
@@ -19,8 +20,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import static bg.softuni.jwt.common.FileConstant.*;
 import static bg.softuni.jwt.common.Messages.USER_DELETED_SUCCESSFULLY;
@@ -67,7 +68,7 @@ public class UserResource {
 
     @PostMapping("/updateProfileImage")
     public ResponseEntity<User> updateProfileImage(@RequestParam("username") String username,
-                                                   @RequestParam("profileImage") MultipartFile profileImage) throws UserExistsException, IOException, UserNotFoundException {
+                                                   @RequestParam("profileImage") MultipartFile profileImage) throws IOException, UserNotFoundException {
 
         User user = userService.updateProfileImage(username, profileImage);
         return new ResponseEntity<>(user, OK);
@@ -79,7 +80,7 @@ public class UserResource {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<List<User>> getAllUsers() {
+    public ResponseEntity<Set<UsersDto>> getAllUsers() {
         return userService.findAllUsers();
     }
 
@@ -87,6 +88,13 @@ public class UserResource {
     @PreAuthorize("hasAnyAuthority('DELETE')")
     public ResponseEntity<HTTPResponse> deletedUser(@PathVariable Long id) {
         userService.deleteUser(id);
+        return response(NO_CONTENT, USER_DELETED_SUCCESSFULLY);
+    }
+
+    @DeleteMapping("/delete/{username}")
+    @PreAuthorize("hasAnyAuthority('DELETE')")
+    public ResponseEntity<HTTPResponse> deleteUser(@PathVariable String username) {
+        userService.deleteUser(username);
         return response(NO_CONTENT, USER_DELETED_SUCCESSFULLY);
     }
 

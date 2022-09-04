@@ -3,13 +3,12 @@ package bg.softuni.jwt.service;
 import bg.softuni.jwt.common.ExceptionMessages;
 import bg.softuni.jwt.dao.RoleRepository;
 import bg.softuni.jwt.dao.UserRepository;
-import bg.softuni.jwt.dto.NewUserDto;
-import bg.softuni.jwt.dto.UpdateUserDto;
-import bg.softuni.jwt.dto.UserLoginDto;
-import bg.softuni.jwt.dto.UserRegisterDto;
+import bg.softuni.jwt.dto.*;
 import bg.softuni.jwt.enumeration.Role;
 import bg.softuni.jwt.exception.UserExistsException;
 import bg.softuni.jwt.exception.UserNotFoundException;
+import bg.softuni.jwt.mapStruct.UserToUserLoginDtoMapper;
+import bg.softuni.jwt.mapStruct.UserToUsersDtoMapper;
 import bg.softuni.jwt.model.User;
 import bg.softuni.jwt.util.JWTProvider;
 import lombok.extern.slf4j.Slf4j;
@@ -36,10 +35,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static bg.softuni.jwt.common.ExceptionMessages.USER_BY_USERNAME_NOT_FOUND;
 import static bg.softuni.jwt.common.ExceptionMessages.USER_NOT_FOUND;
@@ -85,7 +82,7 @@ public class UserService {
         MultipartFile multipartFile = newUserDto.getMultipartFile();
         var userRole = roleRepository.findRoleByName(role);
 
-        User user = UserBuilder.build(firstName, lastName, username, passwordEncoder, defaultPassword, email, userRole);
+        User user = buildUser(firstName, lastName, username, passwordEncoder, defaultPassword, email, userRole);
         saveProfileImage(user, multipartFile);
         userRepository.save(user);
         return new ResponseEntity<>(newUserDto, OK);
@@ -149,6 +146,14 @@ public class UserService {
         userRepository.deleteById(userId);
     }
 
+    public void deleteUser(String username) {
+        Optional<User> optionalUser = this.userRepository.findByUsername(username);
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            userRepository.delete(user);
+        }
+    }
+
     public User updateProfileImage(String username, MultipartFile profileImage) throws UserNotFoundException, IOException {
         validateUsernameCredentials(username);
         User user = userRepository.findByUsername(username).orElse(null);
@@ -166,7 +171,7 @@ public class UserService {
         validateRegisterCredentials(username, email);
 
         var userRole = this.roleRepository.findRoleByName(USER.name());
-        User user = UserBuilder.build(firstName, lastName, username, passwordEncoder, password, email, userRole);
+        User user = buildUser(firstName, lastName, username, passwordEncoder, password, email, userRole);
 
 
         userRepository.save(user);
@@ -174,7 +179,7 @@ public class UserService {
         return new ResponseEntity<>(userRegisterDto, OK);
     }
 
-    public ResponseEntity<UserLoginDto> login(UserLoginDto userLoginDto) {
+    public ResponseEntity<UserLoginDto> login(UserLoginDto userLoginDto) throws UserNotFoundException {
         String username = userLoginDto.getUsername();
         String password = userLoginDto.getPassword();
         UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
@@ -187,8 +192,21 @@ public class UserService {
         newContext.setAuthentication(authentication);
         SecurityContextHolder.setContext(newContext);
 
+        Optional<User> optionalUser = userRepository.findByUsername(username);
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            user.setLastLoginDate(new Date());
+            userRepository.save(user);
+        }
+
         HttpHeaders jwtHeader = getJwtHeader();
-        return new ResponseEntity<>(userLoginDto, jwtHeader, OK);
+        UserLoginDto userLoginMappedDto = mapUserLoginDto(username);
+        return new ResponseEntity<>(userLoginMappedDto, jwtHeader, OK);
+    }
+
+    private UserLoginDto mapUserLoginDto(String username) throws UserNotFoundException {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(USER_BY_USERNAME_NOT_FOUND));
+        return UserToUserLoginDtoMapper.INSTANCE.userLoginDto(user);
     }
 
     private HttpHeaders getJwtHeader() {
@@ -227,27 +245,27 @@ public class UserService {
         return new ResponseEntity<>(optionalUser.get(), OK);
     }
 
-    public ResponseEntity<List<User>> findAllUsers() {
-        List<User> users = this.userRepository.findAll();
+    public ResponseEntity<Set<UsersDto>> findAllUsers() {
+        Set<UsersDto> users = this.userRepository.findAll()
+                .stream().map(UserToUsersDtoMapper.INSTANCE::usersDto)
+                .collect(Collectors.toSet());
         return new ResponseEntity<>(users, OK);
     }
 
-    private static class UserBuilder {
-        private static User build(String firstName, String lastName, String username, PasswordEncoder passwordEncoder,
-                                  String password, String email, bg.softuni.jwt.model.Role userRole) {
+    private User buildUser(String firstName, String lastName, String username, PasswordEncoder passwordEncoder,
+                           String password, String email, bg.softuni.jwt.model.Role userRole) {
 
-            return User.builder()
-                    .userId(generateUserId())
-                    .firstName(firstName)
-                    .lastName(lastName)
-                    .username(username)
-                    .password(passwordEncoder.encode(password))
-                    .email(email)
-                    .joinDate(new Date())
-                    .profileImgUrl(constructProfileImageUrl(username))
-                    .role(userRole)
-                    .isNonLocked(true).isActive(true).build();
-        }
+        return User.builder()
+                .userId(generateUserId())
+                .firstName(firstName)
+                .lastName(lastName)
+                .username(username)
+                .password(password == null ? passwordEncoder.encode(defaultPassword) : passwordEncoder.encode(password))
+                .email(email)
+                .joinDate(new Date())
+                .profileImgUrl(constructProfileImageUrl(username))
+                .role(userRole)
+                .isNonLocked(true).isActive(true).build();
     }
 
     private static String generateUserId() {
@@ -256,6 +274,7 @@ public class UserService {
 
     private static String constructProfileImageUrl(String username) {
         final String DEFAULT_USER_IMAGE_PATH = "/user/image/profile/%s";
+
         return ServletUriComponentsBuilder
                 .fromCurrentContextPath().path(String.format(DEFAULT_USER_IMAGE_PATH, username)).toUriString();
     }

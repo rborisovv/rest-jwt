@@ -2,7 +2,7 @@ package bg.softuni.jwt.web;
 
 import bg.softuni.jwt.domain.HTTPResponse;
 import bg.softuni.jwt.dto.NewUserDto;
-import bg.softuni.jwt.dto.UpdateUserDto;
+import bg.softuni.jwt.dto.UserUpdateDto;
 import bg.softuni.jwt.dto.UsersDto;
 import bg.softuni.jwt.exception.UserExistsException;
 import bg.softuni.jwt.exception.UserNotFoundException;
@@ -52,7 +52,7 @@ public class UserResource {
     }
 
     @PostMapping("/update")
-    public ResponseEntity<UpdateUserDto> updateUser(@RequestParam("currentUsername") String currentUsername,
+    public ResponseEntity<UserUpdateDto> updateUser(@RequestParam("username") String username,
                                                     @RequestParam("firstName") String firstName,
                                                     @RequestParam("lastName") String lastName,
                                                     @RequestParam(value = "email", required = false) String email,
@@ -61,9 +61,15 @@ public class UserResource {
                                                     @RequestParam("isActive") String isActive,
                                                     @RequestParam(value = "profileImage", required = false) MultipartFile profileImage) throws UserExistsException, IOException {
 
-        UpdateUserDto updatedUserDto = new UpdateUserDto(currentUsername, firstName, lastName,
-                email, role, Boolean.parseBoolean(isNonLocked), Boolean.parseBoolean(isActive), profileImage);
-        return userService.updateUser(updatedUserDto);
+        UserUpdateDto userUpdateDto = UserUpdateDto.builder()
+                .username(username)
+                .firstName(firstName).lastName(lastName)
+                .email(email).role(role)
+                .isNonLocked(Boolean.parseBoolean(isNonLocked))
+                .isActive(Boolean.parseBoolean(isActive))
+                .multipartFile(profileImage)
+                .build();
+        return userService.updateUser(userUpdateDto);
     }
 
     @PostMapping("/updateProfileImage")
@@ -91,11 +97,11 @@ public class UserResource {
         return response(NO_CONTENT, USER_DELETED_SUCCESSFULLY);
     }
 
-    @DeleteMapping("/delete/{username}")
+    @DeleteMapping("/deleteByUsername/{username}")
     @PreAuthorize("hasAnyAuthority('DELETE')")
     public ResponseEntity<HTTPResponse> deleteUser(@PathVariable String username) {
         userService.deleteUser(username);
-        return response(NO_CONTENT, USER_DELETED_SUCCESSFULLY);
+        return response(NO_CONTENT, String.format(USER_DELETED_SUCCESSFULLY, username));
     }
 
     private ResponseEntity<HTTPResponse> response(HttpStatus httpStatus, String message) {

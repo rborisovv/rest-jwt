@@ -8,6 +8,7 @@ import bg.softuni.jwt.enumeration.Role;
 import bg.softuni.jwt.exception.UserExistsException;
 import bg.softuni.jwt.exception.UserNotFoundException;
 import bg.softuni.jwt.mapStruct.UserToUserLoginDtoMapper;
+import bg.softuni.jwt.mapStruct.UserToUserUpdateDtoMapper;
 import bg.softuni.jwt.mapStruct.UserToUsersDtoMapper;
 import bg.softuni.jwt.model.User;
 import bg.softuni.jwt.util.JWTProvider;
@@ -107,21 +108,25 @@ public class UserService {
                 .fromCurrentContextPath().path(USER_IMAGE_PATH + username + FORWARD_SLASH + username + DOT + JPG_EXTENSION).toUriString();
     }
 
-    public ResponseEntity<UpdateUserDto> updateUser(UpdateUserDto updateUserDto) throws UserExistsException, IOException {
-        String newEmail = updateUserDto.getEmail();
-        String currentUsername = updateUserDto.getCurrentUsername();
-        if (StringUtils.isNotBlank(newEmail)) {
+    public ResponseEntity<UserUpdateDto> updateUser(UserUpdateDto userUpdateDto) throws UserExistsException, IOException {
+        String newEmail = userUpdateDto.getEmail();
+        String username = userUpdateDto.getUsername();
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(USER_NOT_FOUND));
+        if (StringUtils.isNotBlank(newEmail) && !user.getEmail().equals(newEmail)) {
             validateEmailCredentials(newEmail);
         }
 
-        User user = userRepository.findByUsername(currentUsername).orElseThrow(() -> new UsernameNotFoundException(USER_NOT_FOUND));
 
-        String newFirstName = updateUserDto.getFirstName();
-        String newLastName = updateUserDto.getLastName();
-        String role = updateUserDto.getRole();
-        Boolean isNonLocked = updateUserDto.getIsNonLocked();
-        Boolean isActive = updateUserDto.getIsActive();
-        MultipartFile multipartFile = updateUserDto.getMultipartFile();
+        String newFirstName = userUpdateDto.getFirstName();
+        String newLastName = userUpdateDto.getLastName();
+        String role = userUpdateDto.getRole();
+        Boolean isNonLocked = userUpdateDto.getIsNonLocked();
+        Boolean isActive = userUpdateDto.getIsActive();
+        MultipartFile multipartFile = userUpdateDto.getMultipartFile();
+
+        if (multipartFile != null) {
+            saveProfileImage(user, multipartFile);
+        }
 
         user.setFirstName(newFirstName);
         user.setLastName(newLastName);
@@ -132,10 +137,12 @@ public class UserService {
         user.setRole(userRole);
         user.setIsNonLocked(isNonLocked);
         user.setIsActive(isActive);
-        saveProfileImage(user, multipartFile);
+
+        UserUpdateDto mappedUserUpdateDto = UserToUserUpdateDtoMapper.INSTANCE.userUpdateDto(user);
+        mappedUserUpdateDto.setUsername(userUpdateDto.getUsername());
         userRepository.save(user);
 
-        return new ResponseEntity<>(updateUserDto, OK);
+        return new ResponseEntity<>(mappedUserUpdateDto, OK);
     }
 
     private Role getRole(String role) {

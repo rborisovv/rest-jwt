@@ -8,7 +8,7 @@ import javax.annotation.processing.Generated;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2022-09-04T19:43:36+0300",
+    date = "2022-09-06T10:49:44+0300",
     comments = "version: 1.5.2.Final, compiler: IncrementalProcessingEnvironment from gradle-language-java-7.5.jar, environment: Java 17.0.2 (Oracle Corporation)"
 )
 public class UserToUserLoginDtoMapperImpl implements UserToUserLoginDtoMapper {

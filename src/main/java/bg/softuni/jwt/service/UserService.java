@@ -7,15 +7,12 @@ import bg.softuni.jwt.dto.*;
 import bg.softuni.jwt.enumeration.Role;
 import bg.softuni.jwt.exception.UserExistsException;
 import bg.softuni.jwt.exception.UserNotFoundException;
-import bg.softuni.jwt.mapStruct.UserToUserLoginDtoMapper;
-import bg.softuni.jwt.mapStruct.UserToUserModalDtoMapper;
-import bg.softuni.jwt.mapStruct.UserToUserUpdateDtoMapper;
-import bg.softuni.jwt.mapStruct.UserToUsersDtoMapper;
 import bg.softuni.jwt.model.User;
 import bg.softuni.jwt.util.JWTProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -45,7 +42,6 @@ import static bg.softuni.jwt.common.ExceptionMessages.USER_NOT_FOUND;
 import static bg.softuni.jwt.common.FileConstant.*;
 import static bg.softuni.jwt.common.SecurityConstant.JWT_TOKEN_HEADER;
 import static bg.softuni.jwt.enumeration.Role.*;
-import static bg.softuni.jwt.enumeration.Role.USER;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.springframework.http.HttpStatus.OK;
 
@@ -65,13 +61,16 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final JWTProvider jwtProvider;
 
-    public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder, UserDetailsService userDetailsService, AuthenticationManager authenticationManager, JWTProvider jwtProvider) {
+    private final ModelMapper modelMapper;
+
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder, UserDetailsService userDetailsService, AuthenticationManager authenticationManager, JWTProvider jwtProvider, ModelMapper modelMapper) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.userDetailsService = userDetailsService;
         this.authenticationManager = authenticationManager;
         this.jwtProvider = jwtProvider;
+        this.modelMapper = modelMapper;
     }
 
     public ResponseEntity<NewUserDto> addNewUser(NewUserDto newUserDto) throws UserExistsException, IOException {
@@ -102,10 +101,12 @@ public class UserService {
             }
             Files.deleteIfExists(Paths.get(USER_FOLDER + user.getUsername() + DOT + JPG_EXTENSION));
             Files.copy(profileImage.getInputStream(), userFolder.resolve(user.getUsername() + DOT + JPG_EXTENSION), REPLACE_EXISTING);
-            user.setProfileImgUrl(setProfileImageUrl(user.getUsername()));
+            user.setProfileImageUrl(setProfileImageUrl(user.getUsername()));
             log.info(FILE_SAVED_IN_THE_FILE_SYSTEM + profileImage.getOriginalFilename());
         }
     }
+    //supportal-Radoslav
+    //h&)WUm-Mw83j
 
     private String setProfileImageUrl(String username) {
         return ServletUriComponentsBuilder
@@ -142,7 +143,9 @@ public class UserService {
         user.setIsNonLocked(isNonLocked);
         user.setIsActive(isActive);
 
-        UserUpdateDto mappedUserUpdateDto = UserToUserUpdateDtoMapper.INSTANCE.userUpdateDto(user);
+        UserUpdateDto mappedUserUpdateDto = modelMapper.map(user, UserUpdateDto.class);
+        mappedUserUpdateDto.setRole(user.getRole().getName());
+
         mappedUserUpdateDto.setUsername(userUpdateDto.getUsername());
         userRepository.save(user);
 
@@ -217,7 +220,9 @@ public class UserService {
 
     private UserLoginDto mapUserLoginDto(String username) throws UserNotFoundException {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(USER_BY_USERNAME_NOT_FOUND));
-        return UserToUserLoginDtoMapper.INSTANCE.userLoginDto(user);
+        UserLoginDto userLoginDto = modelMapper.map(user, UserLoginDto.class);
+        userLoginDto.setRole(user.getRole().getName());
+        return userLoginDto;
     }
 
     private HttpHeaders getJwtHeader() {
@@ -253,7 +258,12 @@ public class UserService {
             throw new UserNotFoundException(USER_BY_USERNAME_NOT_FOUND);
         }
 
-        UserModalDto userModalDto = UserToUserModalDtoMapper.INSTANCE.createUserModalDto(optionalUser.get());
+        User user = optionalUser.get();
+
+        UserModalDto userModalDto = modelMapper.map(user, UserModalDto.class);
+        userModalDto.setRole(user.getRole().getName());
+        userModalDto.setAuthorities(user.getRole().getAuthorities());
+
         return new ResponseEntity<>(userModalDto, OK);
     }
 
@@ -261,7 +271,12 @@ public class UserService {
         Set<UsersDto> sortedUsers = new LinkedHashSet<>();
 
         Set<UsersDto> users = this.userRepository.findAll()
-                .stream().map(UserToUsersDtoMapper.INSTANCE::usersDto)
+                .stream().map(user -> {
+                    UsersDto usersDto = modelMapper.map(user, UsersDto.class);
+                    usersDto.setRole(user.getRole().getName());
+                    usersDto.setAuthorities(user.getRole().getAuthorities());
+                    return usersDto;
+                })
                 .collect(Collectors.toSet());
 
         sortedUsers.addAll(filterUsersByRole(users, OWNER));
@@ -288,7 +303,7 @@ public class UserService {
                 .password(password == null ? passwordEncoder.encode(defaultPassword) : passwordEncoder.encode(password))
                 .email(email)
                 .joinDate(new Date())
-                .profileImgUrl(constructProfileImageUrl(username))
+                .profileImageUrl(constructProfileImageUrl(username))
                 .role(userRole)
                 .isNonLocked(true).isActive(true).build();
     }

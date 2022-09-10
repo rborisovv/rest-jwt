@@ -50,7 +50,7 @@ public class User extends BaseEntity implements Serializable {
 
     @NonNull
     @Column(nullable = false)
-    private String profileImgUrl;
+    private String profileImageUrl;
 
     @Column
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM-dd-yyyy hh:mm:ss", timezone = "Europe/Sofia")

@@ -1,6 +1,5 @@
 package bg.softuni.jwt.dto;
 
-import bg.softuni.jwt.enumeration.Authority;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
@@ -32,7 +31,7 @@ public class UserModalDto {
 
     private String role;
 
-    private Set<Authority> authorities;
+    private Set<String> authorities;
 
     private Boolean isNonLocked;
 

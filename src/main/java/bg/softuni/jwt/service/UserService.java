@@ -8,6 +8,7 @@ import bg.softuni.jwt.enumeration.Role;
 import bg.softuni.jwt.exception.UserExistsException;
 import bg.softuni.jwt.exception.UserNotFoundException;
 import bg.softuni.jwt.mapStruct.UserToUserLoginDtoMapper;
+import bg.softuni.jwt.mapStruct.UserToUserModalDtoMapper;
 import bg.softuni.jwt.mapStruct.UserToUserUpdateDtoMapper;
 import bg.softuni.jwt.mapStruct.UserToUsersDtoMapper;
 import bg.softuni.jwt.model.User;
@@ -43,6 +44,7 @@ import static bg.softuni.jwt.common.ExceptionMessages.USER_BY_USERNAME_NOT_FOUND
 import static bg.softuni.jwt.common.ExceptionMessages.USER_NOT_FOUND;
 import static bg.softuni.jwt.common.FileConstant.*;
 import static bg.softuni.jwt.common.SecurityConstant.JWT_TOKEN_HEADER;
+import static bg.softuni.jwt.enumeration.Role.*;
 import static bg.softuni.jwt.enumeration.Role.USER;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.springframework.http.HttpStatus.OK;
@@ -84,7 +86,9 @@ public class UserService {
         var userRole = roleRepository.findRoleByName(role);
 
         User user = buildUser(firstName, lastName, username, passwordEncoder, defaultPassword, email, userRole);
-        saveProfileImage(user, multipartFile);
+        if (multipartFile != null) {
+            saveProfileImage(user, multipartFile);
+        }
         userRepository.save(user);
         return new ResponseEntity<>(newUserDto, OK);
     }
@@ -146,7 +150,7 @@ public class UserService {
     }
 
     private Role getRole(String role) {
-        return Role.valueOf(role.toUpperCase(Locale.ROOT));
+        return valueOf(role.toUpperCase(Locale.ROOT));
     }
 
     public void deleteUser(Long userId) {
@@ -243,20 +247,34 @@ public class UserService {
         }
     }
 
-    public ResponseEntity<User> findUserByUsername(String username) throws UserNotFoundException {
+    public ResponseEntity<UserModalDto> findUserByUsername(String username) throws UserNotFoundException {
         Optional<User> optionalUser = this.userRepository.findByUsername(username);
         if (optionalUser.isEmpty()) {
             throw new UserNotFoundException(USER_BY_USERNAME_NOT_FOUND);
         }
 
-        return new ResponseEntity<>(optionalUser.get(), OK);
+        UserModalDto userModalDto = UserToUserModalDtoMapper.INSTANCE.createUserModalDto(optionalUser.get());
+        return new ResponseEntity<>(userModalDto, OK);
     }
 
     public ResponseEntity<Set<UsersDto>> findAllUsers() {
+        Set<UsersDto> sortedUsers = new LinkedHashSet<>();
+
         Set<UsersDto> users = this.userRepository.findAll()
                 .stream().map(UserToUsersDtoMapper.INSTANCE::usersDto)
                 .collect(Collectors.toSet());
-        return new ResponseEntity<>(users, OK);
+
+        sortedUsers.addAll(filterUsersByRole(users, OWNER));
+        sortedUsers.addAll(filterUsersByRole(users, HR));
+        sortedUsers.addAll(filterUsersByRole(users, ADMIN));
+        sortedUsers.addAll(filterUsersByRole(users, MANAGER));
+        sortedUsers.addAll(filterUsersByRole(users, USER));
+
+        return new ResponseEntity<>(sortedUsers, OK);
+    }
+
+    private Set<UsersDto> filterUsersByRole(Set<UsersDto> users, Role role) {
+        return users.stream().filter(user -> user.getRole().equals(role.name())).collect(Collectors.toSet());
     }
 
     private User buildUser(String firstName, String lastName, String username, PasswordEncoder passwordEncoder,

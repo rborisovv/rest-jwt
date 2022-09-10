@@ -2,6 +2,7 @@ package bg.softuni.jwt.web;
 
 import bg.softuni.jwt.domain.HTTPResponse;
 import bg.softuni.jwt.dto.NewUserDto;
+import bg.softuni.jwt.dto.UserModalDto;
 import bg.softuni.jwt.dto.UserUpdateDto;
 import bg.softuni.jwt.dto.UsersDto;
 import bg.softuni.jwt.exception.UserExistsException;
@@ -81,7 +82,7 @@ public class UserResource {
     }
 
     @GetMapping("/find/{username}")
-    public ResponseEntity<User> getUser(@PathVariable String username) throws UserNotFoundException {
+    public ResponseEntity<UserModalDto> getUser(@PathVariable String username) throws UserNotFoundException {
         return userService.findUserByUsername(username);
     }
 

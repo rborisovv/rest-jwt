@@ -45,7 +45,7 @@ public class DatabaseInit implements CommandLineRunner {
 
             Role moderatorRole = Role.builder()
                     .name(OWNER.name())
-                    .authorities(Authority.MODERATOR_AUTHORITIES)
+                    .authorities(Authority.OWNER_AUTHORITIES)
                     .build();
 
             roleRepository.saveAll(Set.of(userRole, hrRole, managerRole, adminRole, moderatorRole));
